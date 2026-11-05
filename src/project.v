@@ -5,7 +5,8 @@
  * RISC-V style register file: eight 8-bit registers where x0 is hardwired
  * to zero, with write-through forwarding so a read of the register being
  * written in the same cycle returns the new value, like a CPU pipeline's
- * register file bypass.
+ * register file bypass. The pins are registered on the way in so
+ * signals from the board are never used mid-change.
  */
 
 `default_nettype none
@@ -21,10 +22,24 @@ module tt_um_zjohnson2005_regfile (
     input  wire       rst_n
 );
 
-    wire [7:0] write_data    = ui_in;
-    wire [2:0] write_address = uio_in[2:0];
-    wire       write_enable  = uio_in[3];
-    wire [2:0] read_address  = uio_in[6:4];
+    reg [7:0] write_data;
+    reg [2:0] write_address;
+    reg       write_enable;
+    reg [2:0] read_address;
+
+    always @(posedge clk) begin
+        if (!rst_n) begin
+            write_data    <= 8'd0;
+            write_address <= 3'd0;
+            write_enable  <= 1'b0;
+            read_address  <= 3'd0;
+        end else begin
+            write_data    <= ui_in;
+            write_address <= uio_in[2:0];
+            write_enable  <= uio_in[3];
+            read_address  <= uio_in[6:4];
+        end
+    end
 
     reg [7:0] registers [1:7];
     reg [7:0] read_data;

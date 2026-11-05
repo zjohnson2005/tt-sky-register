@@ -26,8 +26,9 @@ async def reset(dut):
 async def step(dut, write_data=0, write_address=0, write_enable=0, read_address=0):
     dut.ui_in.value = write_data
     dut.uio_in.value = control(write_address, write_enable, read_address)
-    await RisingEdge(dut.clk)
-    await FallingEdge(dut.clk)
+    for _ in range(2):
+        await RisingEdge(dut.clk)
+        await FallingEdge(dut.clk)
     return int(dut.uo_out.value)
 
 
